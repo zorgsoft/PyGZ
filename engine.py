@@ -2,6 +2,8 @@ import codecs
 import configparser
 import importlib
 import time
+from gtts import gTTS
+import pyglet
 
 # Load configuration file with commads list
 commandsConfig = configparser.ConfigParser()
@@ -37,7 +39,9 @@ def run(command):
         try:
             cmdlib = importlib.import_module('mod.cm_' + commandsConfig[cmdname]['fn'])
             results = cmdlib.start(cmdparams)
-            print(results)
+            if results["say"]:
+                saytext(results["say"])
+            print(results["text"])
         except ImportError:
             print('Модуль комманд "', cmdname, '" не найден.')
     elif cmdname in exitCmdList:
@@ -57,3 +61,12 @@ def interactive_input():
         for command_item in commands_list:
             run(command_item)
             print('{0:=>45}'.format(' '))
+
+
+def saytext(texttosay):
+    if len(texttosay.strip()) < 1:
+        return
+    tts = gTTS(text=texttosay, lang='ru')
+    tts.save("results.mp3")
+    music = pyglet.resource.media("results.mp3")
+    music.play()
