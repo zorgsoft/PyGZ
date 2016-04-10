@@ -33,7 +33,7 @@ def run(command):
     """
     cmdname, cmdparams = returncommands(command)
     start = time.time()
-    if cmdname in commandsConfig.sections():
+    if cmdname in (k.lower() for k in commandsConfig.sections()):
         try:
             cmdlib = importlib.import_module('mod.cm_' + commandsConfig[cmdname]['fn'])
             results = cmdlib.start(cmdparams)
