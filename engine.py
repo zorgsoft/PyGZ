@@ -5,13 +5,56 @@ import time
 from gtts import gTTS
 import pyglet
 
-# Load configuration file with commads list
-commandsConfig = configparser.ConfigParser()
-commandsConfig.read_file(codecs.open("commands.ini", "r", "utf8"))
+FILE_INI_CONFIG = "config.ini"
+FILE_INI_COMMANDS = "commands.ini"
 
 # List exit commands
 exitCmdList = ['exit', 'quit', 'q', 'выход', 'выйти', 'завершть', 'stop', 'стоп']
-commandsStr = ''
+
+
+def config_load(config_file_name):
+    """
+    Load configuration file
+    :param config_file_name: filename string
+    :return: configparser object
+    """
+    tmp_config = configparser.ConfigParser()
+    tmp_config.read_file(codecs.open(config_file_name, "r", "utf8"))
+    return tmp_config
+
+
+def config_write(config_file_name, section, option, value):
+    """
+    Write to configuration ini file
+    :param config_file_name: configuration file name string
+    :param section: section name [section]
+    :param option: option name
+    :param value: option value
+    """
+    tmp_config = configparser.ConfigParser()
+    tmp_config.read_file(codecs.open(config_file_name, "r", "utf8"))
+    if not tmp_config.has_section(section):
+        tmp_config.add_section(section)
+    tmp_config.set(section, option, value)
+    with codecs.open(config_file_name, "wb", "utf8") as config_file:
+        tmp_config.write(config_file)
+
+
+def config_cmd_delete(section):
+    """
+    Delete [section] from commands configuration file
+    :param section: section name
+    """
+    tmp_config = configparser.ConfigParser()
+    tmp_config.read_file(codecs.open(FILE_INI_COMMANDS, "r", "utf8"))
+    if tmp_config.has_section(section):
+        tmp_config.remove_section(section)
+    with codecs.open(FILE_INI_COMMANDS, "wb", "utf8") as config_file:
+        tmp_config.write(config_file)
+
+
+# Load configuration file with commads list
+commandsConfig = config_load(FILE_INI_COMMANDS)
 
 
 def returncommands(inputstr):
@@ -27,10 +70,11 @@ def returncommands(inputstr):
     return cmdname_r.lower(), cmdparams_r
 
 
-def run(command):
+def run(command, voice_enable=True):
     """
     Run commands separeted by ";"
     :param command: commands string
+    :param voice_enable: enable voice tts
     :return: none
     """
     cmdname, cmdparams = returncommands(command)
@@ -39,7 +83,7 @@ def run(command):
         try:
             cmdlib = importlib.import_module('mod.cm_' + commandsConfig[cmdname]['fn'])
             results = cmdlib.start(cmdparams)
-            if results["say"]:
+            if results["say"] and voice_enable:
                 saytext(results["say"])
             print(results["text"])
         except ImportError:
@@ -64,6 +108,10 @@ def interactive_input():
 
 
 def saytext(texttosay):
+    """
+    Say text with gTTS and pyglet modules
+    :param texttosay: text string
+    """
     if len(texttosay.strip()) < 1:
         return
     tts = gTTS(text=texttosay, lang='ru')
