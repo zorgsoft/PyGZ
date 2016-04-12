@@ -9,6 +9,7 @@ FILE_INI_CONFIG = "config.ini"
 FILE_INI_COMMANDS = "commands.ini"
 
 # List exit commands
+# TODO: Что то сделать с этим
 exitCmdList = ['exit', 'quit', 'q', 'выход', 'выйти', 'завершть', 'stop', 'стоп']
 
 
@@ -112,6 +113,7 @@ def saytext(texttosay):
     Say text with gTTS and pyglet modules
     :param texttosay: text string
     """
+    # TODO: Доработать, добавить возможность изменять язык и удалять за собой файлы
     if len(texttosay.strip()) < 1:
         return
     tts = gTTS(text=texttosay, lang='ru')
