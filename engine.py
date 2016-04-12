@@ -4,6 +4,9 @@ import importlib
 import time
 from gtts import gTTS
 import pyglet
+import threading
+
+threads = []
 
 FILE_INI_CONFIG = "config.ini"
 FILE_INI_COMMANDS = "commands.ini"
@@ -85,7 +88,9 @@ def run(command, voice_enable=True):
             cmdlib = importlib.import_module('mod.cm_' + commandsConfig[cmdname]['fn'])
             results = cmdlib.start(cmdparams)
             if results["say"] and voice_enable:
-                saytext(results["say"])
+                t = threading.Thread(target=saytext, args=(results["say"],))
+                threads.append(t)
+                t.start()
             print(results["text"])
         except ImportError:
             print('Модуль комманд "', cmdname, '" не найден.')
@@ -94,6 +99,7 @@ def run(command, voice_enable=True):
     else:
         print('Нет такой комманды!')
     end = time.time()
+    print('{0:=>45}'.format(' '))
     print(round(time.time() - start, 5))
 
 
@@ -105,7 +111,6 @@ def interactive_input():
 
         for command_item in commands_list:
             run(command_item)
-            print('{0:=>45}'.format(' '))
 
 
 def saytext(texttosay):
